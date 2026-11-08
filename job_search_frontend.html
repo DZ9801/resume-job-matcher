@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Toronto Job Finder</title>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: rgba(255, 251, 245, 0.88);
+      --panel-strong: #fffaf2;
+      --ink: #1f2933;
+      --muted: #5c6b73;
+      --accent: #c45c2d;
+      --accent-2: #14746f;
+      --line: rgba(31, 41, 51, 0.12);
+      --shadow: 0 24px 80px rgba(87, 55, 23, 0.14);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Noto Sans", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(196, 92, 45, 0.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(20, 116, 111, 0.18), transparent 28%),
+        linear-gradient(180deg, #fbf6ef 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 24px auto 40px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .form-panel { padding: 24px; }
+    .results-panel { padding: 24px; min-height: 0; }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(196, 92, 45, 0.12);
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(30px, 5vw, 46px);
+      line-height: 1.02;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .lead, .hint {
+      color: var(--muted);
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .form-section {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.34);
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.42);
+      overflow: hidden;
+    }
+
+    summary {
+      padding: 13px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .details-body {
+      display: grid;
+      gap: 12px;
+      padding: 0 14px 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    input[type="password"],
+    input[type="url"],
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font: inherit;
+      background: rgba(255,255,255,0.82);
+      color: var(--ink);
+    }
+
+    textarea { min-height: 96px; resize: vertical; }
+    textarea.compact-textarea { min-height: 66px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .grid-2 > *,
+    .details-body > * {
+      min-width: 0;
+    }
+
+    .toggle-row, .sources {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 20px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent) 0%, #d98038 100%);
+      color: white;
+      box-shadow: 0 18px 30px rgba(196, 92, 45, 0.24);
+    }
+
+    button[disabled] { opacity: 0.6; cursor: wait; }
+
+    .ghost {
+      background: rgba(20, 116, 111, 0.1);
+      color: var(--accent-2);
+      box-shadow: none;
+    }
+
+    .status {
+      min-height: 24px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .resume-analysis {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(20,116,111,0.08);
+      border: 1px solid rgba(20,116,111,0.14);
+    }
+
+    .resume-analysis strong { display: block; margin-bottom: 6px; }
+    .resume-analysis .pill-list { margin: 8px 0 0; }
+
+    .hero-art {
+      margin: 20px 0 2px;
+      height: 148px;
+      border-radius: 24px;
+      background:
+        linear-gradient(120deg, rgba(20, 116, 111, 0.9), rgba(20, 116, 111, 0.55)),
+        linear-gradient(45deg, rgba(255,255,255,0.12), rgba(255,255,255,0));
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-art::before,
+    .hero-art::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.16);
+    }
+
+    .hero-art::before {
+      width: 220px;
+      height: 220px;
+      right: -70px;
+      top: -56px;
+    }
+
+    .hero-art::after {
+      width: 160px;
+      height: 160px;
+      left: 18px;
+      bottom: -80px;
+    }
+
+    .hero-copy {
+      position: absolute;
+      inset: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      color: white;
+    }
+
+    .hero-copy strong { font-size: 22px; }
+
+    .results-empty {
+      height: 100%;
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.4);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0 22px;
+    }
+
+    .card {
+      background: var(--panel-strong);
+      border: 1px solid rgba(20, 116, 111, 0.08);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .card .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .card .value {
+      margin-top: 8px;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 18px;
+    }
+
+    .pill {
+      background: rgba(196, 92, 45, 0.12);
+      color: var(--accent);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.72);
+    }
+
+    th, td {
+      text-align: left;
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(20,116,111,0.06);
+    }
+
+    tr:hover td { background: rgba(255,255,255,0.86); }
+    a { color: var(--accent-2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .path {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(20,116,111,0.08);
+      color: var(--accent-2);
+      margin-bottom: 12px;
+      word-break: break-all;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .linkedin-fallback {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 18px;
+    }
+
+    .linkedin-fallback a {
+      display: inline-flex;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(20,116,111,0.1);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .form-panel { position: static; }
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="panel form-panel">
+      <div class="eyebrow">Local Job Search Studio</div>
+      <h1>Run Toronto job hunts without the terminal.</h1>
+      <p class="lead">Upload your resume, pick your source mix, and let the matcher build a ranked CSV for you.</p>
+      <form id="job-form" class="stack">
+        <section class="form-section">
+          <h2 class="section-title">1. Resume and target</h2>
+          <label>Resume file<input type="file" id="resume-file" name="resume" accept=".pdf,.docx,.txt,.md" required></label>
+          <div id="resume-analysis" class="resume-analysis" hidden>
+            <strong id="resume-analysis-title">Resume analysis</strong>
+            <div class="hint" id="resume-experience"></div>
+            <div class="hint">Inferred target titles</div>
+            <div class="pill-list" id="resume-title-pills"></div>
+            <div class="hint">Keywords detected from this resume</div>
+            <div class="pill-list" id="resume-keyword-pills"></div>
+          </div>
+          <label>Target titles<textarea id="target-titles" name="titles" placeholder="Software Engineer, Data Engineer, QA Engineer"></textarea></label>
+          <label>Resume keywords to use<textarea class="compact-textarea" id="resume-keywords" name="resume_keywords" placeholder="Upload a resume to fill these automatically, then edit as needed."></textarea></label>
+          <div class="grid-2">
+            <label>Location<input type="text" name="location" value="Toronto"></label>
+            <label>Professional experience (years)<input type="number" id="experience-years-override" name="experience_years_override" min="0" max="50" step="0.1" placeholder="Auto from resume"></label>
+          </div>
+          <div class="grid-2">
+            <label class="chip"><input type="checkbox" name="include_remote" checked> Include remote / hybrid</label>
+            <div class="hint">Edit the fields above as needed. Uploading a different resume refreshes these values.</div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h2 class="section-title">2. Job sources</h2>
+          <div class="sources">
+            <label class="chip"><input type="checkbox" name="use_greenhouse" checked> Greenhouse company boards</label>
+            <label class="chip"><input type="checkbox" name="use_lever" checked> Lever company boards</label>
+            <label class="chip"><input type="checkbox" name="jobspy_sites" value="indeed" checked> Indeed</label>
+            <label class="chip"><input type="checkbox" id="linkedin-source" name="jobspy_sites" value="linkedin"> LinkedIn</label>
+            <label class="chip"><input type="checkbox" name="jobspy_sites" value="glassdoor"> Glassdoor</label>
+            <label class="chip"><input type="checkbox" name="jobspy_sites" value="google"> Google Jobs</label>
+            <label class="chip"><input type="checkbox" name="jobspy_sites" value="zip_recruiter"> ZipRecruiter</label>
+          </div>
+          <label>Company career-page preset
+            <select name="companies_preset">
+              <option value="toronto_canada">Toronto / Canada starter list</option>
+              <option value="global_tech">Global tech starter list</option>
+              <option value="">No preset</option>
+            </select>
+          </label>
+          <div id="linkedin-options" class="details-body" hidden>
+            <label class="chip"><input type="checkbox" id="linkedin-full-description" name="jobspy_linkedin_fetch_description"> Fetch full LinkedIn descriptions for accurate requirements (slower)</label>
+            <div class="grid-2">
+              <label>Pause between terms (seconds)<input type="number" name="jobspy_linkedin_delay_seconds" value="4" min="0" max="60" step="0.5"></label>
+              <label>Terms per run<input type="number" name="jobspy_linkedin_max_terms" value="3" min="1" max="6"></label>
+            </div>
+            <div class="hint">The checkbox above uses JobSpy. For a direct LinkedIn search in your signed-in browser, use the official links below instead.</div>
+            <button type="button" class="secondary" id="linkedin-entry-search-button">Create official LinkedIn entry-level searches</button>
+            <div class="pill-list" id="linkedin-entry-searches" hidden></div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h2 class="section-title">3. Matching</h2>
+          <label class="chip"><input type="checkbox" name="use_resume_keywords" checked> Use detected resume keywords for matching</label>
+          <label>Additional matching keywords<input type="text" name="include_keywords" placeholder="python, sql, cloud"></label>
+          <label>Exclude keywords<input type="text" name="exclude_keywords" placeholder="senior, director, recruiter"></label>
+          <label class="chip"><input type="checkbox" name="verify_apply_pages" checked> Verify full JD for top matches</label>
+          <label class="chip"><input type="checkbox" name="source_balanced_verification" checked> Balance JD verification across sources</label>
+        </section>
+
+        <details>
+          <summary>Advanced search settings</summary>
+          <div class="details-body">
+            <label>JobSpy batch-search terms<input type="text" id="jobspy-search-terms" name="jobspy_search_terms" placeholder="Leave blank to use your target titles"></label>
+            <div class="grid-2">
+              <label>Results per term<input type="number" name="jobspy_results_wanted" value="40" min="5" max="200"></label>
+              <label>Posted within hours<input type="number" name="jobspy_hours_old" value="0" min="0" placeholder="0 = any time"></label>
+            </div>
+            <div class="grid-2">
+              <label>Minimum score<input type="number" name="min_score" value="3.5" step="0.1"></label>
+              <label>Full JD pages to verify<input type="number" name="verify_apply_limit" value="15" min="1" max="30"></label>
+            </div>
+            <label>Custom company list<input type="file" name="companies_upload" accept=".txt"></label>
+            <label>CSV filename<input type="text" name="output_name" value="toronto_matches.csv"></label>
+          </div>
+        </details>
+
+        <details>
+          <summary>Optional AI reranking</summary>
+          <div class="details-body">
+            <label>AI Provider
+              <select id="ai-provider" name="ai_provider">
+                <option value="off">Off - local rules only</option>
+                <option value="deepseek">DeepSeek</option>
+                <option value="ollama">Ollama Local</option>
+                <option value="openai-compatible">OpenAI-compatible API</option>
+              </select>
+            </label>
+            <div class="grid-2" id="ai-settings" hidden>
+              <label id="ai-key-field">API key<input type="password" name="ai_api_key" autocomplete="off" placeholder="sk-..."></label>
+              <label>Model<input type="text" id="ai-model" name="ai_model" value="deepseek-chat"></label>
+              <label id="ai-base-url-field">Chat Completions URL<input type="url" id="ai-base-url" name="ai_base_url" placeholder="https://example.com/v1/chat/completions"></label>
+              <label>Jobs sent to AI<input type="number" name="ai_rerank_limit" value="20" min="5" max="50"></label>
+              <div class="hint" id="ai-provider-hint">Only local top matches are sent. Your key is not saved.</div>
+              <button type="button" class="ghost" id="test-ai-button">Test AI connection</button>
+              <div class="hint" id="ai-test-status"></div>
+            </div>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button type="submit" id="run-button">Run Search</button>
+          <button type="reset" class="ghost">Reset</button>
+        </div>
+        <div id="status" class="status"></div>
+      </form>
+    </section>
+
+    <section class="panel results-panel" id="results-panel" hidden>
+      <div id="empty-state" class="results-empty">
+        <div>
+          <h2>Ready when you are.</h2>
+          <p>Run a search and this panel will show inferred titles, keywords, a CSV path, and top matches.</p>
+        </div>
+      </div>
+      <div id="results" hidden>
+        <div class="path" id="output-path"></div>
+        <div class="hint" id="source-summary"></div>
+        <div id="linkedin-fallback" class="linkedin-fallback" hidden></div>
+        <div class="cards">
+          <div class="card">
+            <div class="label">Matched Jobs</div>
+            <div class="value" id="match-count">0</div>
+          </div>
+          <div class="card">
+            <div class="label">Top Title Hint</div>
+            <div class="value" id="top-title">-</div>
+          </div>
+          <div class="card">
+            <div class="label">Top Keyword</div>
+            <div class="value" id="top-keyword">-</div>
+          </div>
+        </div>
+
+        <h3>Inferred titles</h3>
+        <div class="pill-list" id="title-pills"></div>
+
+        <h3>Top keywords</h3>
+        <div class="pill-list" id="keyword-pills"></div>
+
+        <section id="fetched-results" hidden>
+          <h3>Fetched before resume scoring</h3>
+          <div class="hint" id="fetched-summary"></div>
+          <table>
+            <thead>
+              <tr>
+                <th>Job</th><th>Company</th><th>Location</th><th>Platform</th><th>JD text</th><th>Open</th>
+              </tr>
+            </thead>
+            <tbody id="fetched-results-body"></tbody>
+          </table>
+        </section>
+
+        <h3>Overall ranking</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Overall</th>
+              <th>Score</th>
+              <th>Job</th>
+              <th>Company</th>
+              <th>Location</th>
+              <th>Platform</th>
+              <th>Apply</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+
+        <section id="indeed-ranking" hidden>
+          <h3>Indeed ranking</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Indeed</th><th>Overall</th><th>Score</th><th>Job</th><th>Company</th><th>Location</th><th>Platform</th><th>Apply</th><th>Why</th>
+              </tr>
+            </thead>
+            <tbody id="indeed-results-body"></tbody>
+          </table>
+        </section>
+
+        <section id="linkedin-ranking" hidden>
+          <h3>LinkedIn ranking</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>LinkedIn</th><th>Overall</th><th>Score</th><th>Job</th><th>Company</th><th>Location</th><th>Platform</th><th>Apply</th><th>Why</th>
+              </tr>
+            </thead>
+            <tbody id="linkedin-results-body"></tbody>
+          </table>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const form = document.getElementById("job-form");
+    const statusEl = document.getElementById("status");
+    const runButton = document.getElementById("run-button");
+    const emptyState = document.getElementById("empty-state");
+    const resultsEl = document.getElementById("results");
+    const resultsPanelEl = document.getElementById("results-panel");
+    const outputPathEl = document.getElementById("output-path");
+    const sourceSummaryEl = document.getElementById("source-summary");
+    const linkedInFallbackEl = document.getElementById("linkedin-fallback");
+    const matchCountEl = document.getElementById("match-count");
+    const topTitleEl = document.getElementById("top-title");
+    const topKeywordEl = document.getElementById("top-keyword");
+    const titlePillsEl = document.getElementById("title-pills");
+    const keywordPillsEl = document.getElementById("keyword-pills");
+    const resultsBodyEl = document.getElementById("results-body");
+    const fetchedResultsEl = document.getElementById("fetched-results");
+    const fetchedSummaryEl = document.getElementById("fetched-summary");
+    const fetchedResultsBodyEl = document.getElementById("fetched-results-body");
+    const indeedRankingEl = document.getElementById("indeed-ranking");
+    const linkedInRankingEl = document.getElementById("linkedin-ranking");
+    const indeedResultsBodyEl = document.getElementById("indeed-results-body");
+    const linkedInResultsBodyEl = document.getElementById("linkedin-results-body");
+    const resumeFile = document.getElementById("resume-file");
+    const resumeAnalysis = document.getElementById("resume-analysis");
+    const resumeAnalysisTitle = document.getElementById("resume-analysis-title");
+    const resumeExperience = document.getElementById("resume-experience");
+    const resumeTitlePills = document.getElementById("resume-title-pills");
+    const resumeKeywordPills = document.getElementById("resume-keyword-pills");
+    const targetTitlesInput = document.getElementById("target-titles");
+    const resumeKeywordsInput = document.getElementById("resume-keywords");
+    const experienceYearsInput = document.getElementById("experience-years-override");
+    const linkedInSource = document.getElementById("linkedin-source");
+    const linkedInOptions = document.getElementById("linkedin-options");
+    const linkedInFullDescription = document.getElementById("linkedin-full-description");
+    const aiProvider = document.getElementById("ai-provider");
+    const aiSettings = document.getElementById("ai-settings");
+    const aiKeyField = document.getElementById("ai-key-field");
+    const aiBaseUrlField = document.getElementById("ai-base-url-field");
+    const aiModel = document.getElementById("ai-model");
+    const aiBaseUrl = document.getElementById("ai-base-url");
+    const aiProviderHint = document.getElementById("ai-provider-hint");
+    const testAiButton = document.getElementById("test-ai-button");
+    const aiTestStatus = document.getElementById("ai-test-status");
+    const linkedInEntrySearchButton = document.getElementById("linkedin-entry-search-button");
+    const linkedInEntrySearches = document.getElementById("linkedin-entry-searches");
+    const providerSettings = {
+      deepseek: {
+        model: "deepseek-chat",
+        url: "",
+        key: true,
+        urlRequired: false,
+        hint: "Only local top matches are sent to DeepSeek. Your key is not saved.",
+      },
+      ollama: {
+        model: "",
+        url: "http://127.0.0.1:11434/v1/chat/completions",
+        key: false,
+        urlRequired: false,
+        hint: "Ollama runs on your computer. Local models use at most 8 jobs per rerank to fit common context limits; no API key is needed.",
+      },
+      "openai-compatible": {
+        model: "",
+        url: "",
+        key: true,
+        urlRequired: true,
+        hint: "Enter the provider's full /chat/completions URL. Only local top matches are sent; your key is not saved.",
+      },
+    };
+
+    function updateAiSettings() {
+      const selected = aiProvider.value;
+      aiSettings.hidden = selected === "off";
+      if (selected === "off") return;
+      const config = providerSettings[selected];
+      aiKeyField.hidden = !config.key;
+      aiBaseUrlField.hidden = !config.urlRequired && selected === "deepseek";
+      aiBaseUrl.required = config.urlRequired;
+      aiProviderHint.textContent = config.hint;
+      if (!aiModel.value || aiModel.value === "deepseek-chat") aiModel.value = config.model;
+      if (selected === "ollama") aiBaseUrl.value = config.url;
+    }
+
+    aiProvider.addEventListener("change", updateAiSettings);
+    updateAiSettings();
+
+    testAiButton.addEventListener("click", async () => {
+      if (aiProvider.value === "off") {
+        aiTestStatus.textContent = "Select an AI provider first.";
+        return;
+      }
+      testAiButton.disabled = true;
+      aiTestStatus.textContent = "Testing connection...";
+      try {
+        const response = await fetch("/api/test-ai", { method: "POST", body: new FormData(form) });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "AI connection failed.");
+        aiTestStatus.textContent = `Connected: ${payload.provider} (${payload.model}).`;
+      } catch (error) {
+        aiTestStatus.textContent = error.message || "AI connection failed.";
+      } finally {
+        testAiButton.disabled = false;
+      }
+    });
+
+    linkedInEntrySearchButton.addEventListener("click", () => {
+      const terms = ["entry level", "new grad", "graduate program", "junior", "associate"];
+      const location = form.elements.location.value.trim() || "Toronto";
+      linkedInEntrySearches.innerHTML = "";
+      terms.forEach((term) => {
+        const link = document.createElement("a");
+        link.href = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(term)}&location=${encodeURIComponent(location)}`;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.className = "pill";
+        link.textContent = `Open LinkedIn: ${term}`;
+        linkedInEntrySearches.appendChild(link);
+      });
+      linkedInEntrySearches.hidden = false;
+    });
+
+    function updateLinkedInOptions() {
+      linkedInOptions.hidden = !linkedInSource.checked;
+      if (linkedInSource.checked) linkedInFullDescription.checked = true;
+    }
+
+    linkedInSource.addEventListener("change", updateLinkedInOptions);
+    updateLinkedInOptions();
+
+    function setStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.style.color = isError ? "#b42318" : "";
+    }
+
+    function renderPills(container, values, fallback) {
+      container.innerHTML = "";
+      if (!values.length) {
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = fallback;
+        container.appendChild(pill);
+        return;
+      }
+      values.forEach((value) => {
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = value;
+        container.appendChild(pill);
+      });
+    }
+
+    async function previewResume() {
+      const file = resumeFile.files[0];
+      if (!file) return;
+      resumeAnalysis.hidden = false;
+      resumeAnalysisTitle.textContent = "Analyzing resume locally...";
+      resumeExperience.textContent = "";
+      resumeTitlePills.innerHTML = "";
+      resumeKeywordPills.innerHTML = "";
+      try {
+        const upload = new FormData();
+        upload.append("resume", file);
+        const response = await fetch("/api/resume-preview", { method: "POST", body: upload });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not analyze this resume.");
+        const experience = payload.resume_experience_years || {};
+        resumeAnalysisTitle.textContent = "Resume profile ready - review and edit below";
+        const months = experience.professional_months;
+        resumeExperience.textContent = `Estimated professional experience: ${experience.professional ?? 0} years${Number.isFinite(months) ? ` (about ${months} months)` : ""}.`;
+        renderPills(resumeTitlePills, payload.inferred_titles || [], "No title hints found");
+        renderPills(resumeKeywordPills, payload.top_keywords || [], "No keywords found");
+        targetTitlesInput.value = (payload.inferred_titles || []).slice(0, 6).join(", ");
+        resumeKeywordsInput.value = (payload.top_keywords || []).slice(0, 30).join(", ");
+        experienceYearsInput.value = experience.professional ?? "";
+      } catch (error) {
+        resumeAnalysisTitle.textContent = error.message || "Could not analyze this resume.";
+      }
+    }
+
+    resumeFile.addEventListener("change", previewResume);
+
+    function escapeHtml(value) {
+      return String(value || "-").replace(/[&<>'"]/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;",
+      }[character]));
+    }
+
+    function safeHttpUrl(value) {
+      try {
+        const url = new URL(value);
+        return ["http:", "https:"].includes(url.protocol) ? url.href : "#";
+      } catch {
+        return "#";
+      }
+    }
+
+    function renderRows(container, rows, showSourceRank = false) {
+      container.innerHTML = "";
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        const jobUrl = safeHttpUrl(row.url);
+        const applyUrl = safeHttpUrl(row.apply_url || row.url);
+        tr.innerHTML = `
+          ${showSourceRank ? `<td>#${escapeHtml(row.source_rank)}</td>` : ""}
+          <td>#${escapeHtml(row.overall_rank)}</td>
+          <td>${escapeHtml(row.match_score)}</td>
+          <td><a href="${jobUrl}" target="_blank" rel="noreferrer">${escapeHtml(row.title)}</a></td>
+          <td>${escapeHtml(row.company)}</td>
+          <td>${escapeHtml(row.location)}</td>
+          <td>${escapeHtml(row.platform)}</td>
+          <td><a href="${applyUrl}" target="_blank" rel="noreferrer">Apply</a></td>
+          <td>${escapeHtml(row.reasons)}</td>
+        `;
+        container.appendChild(tr);
+      });
+    }
+
+    function renderFetchedRows(rows) {
+      fetchedResultsBodyEl.innerHTML = "";
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        const jobUrl = safeHttpUrl(row.url);
+        const jdStatus = row.description_length >= 900 ? "Full / long" : `${row.description_length || 0} characters`;
+        tr.innerHTML = `
+          <td>${escapeHtml(row.title)}</td>
+          <td>${escapeHtml(row.company)}</td>
+          <td>${escapeHtml(row.location)}</td>
+          <td>${escapeHtml(row.platform)}</td>
+          <td>${escapeHtml(jdStatus)}</td>
+          <td><a href="${jobUrl}" target="_blank" rel="noreferrer">Open</a></td>
+        `;
+        fetchedResultsBodyEl.appendChild(tr);
+      });
+    }
+
+    function formatSourceCounts(counts) {
+      const entries = Object.entries(counts || {});
+      return entries.length
+        ? entries.map(([source, count]) => `${source}: ${count}`).join(", ")
+        : "none";
+    }
+
+    function renderLinkedInFallback(titles) {
+      linkedInFallbackEl.innerHTML = "";
+      if (!linkedInSource.checked) {
+        linkedInFallbackEl.hidden = true;
+        return;
+      }
+      const location = form.elements.location.value.trim() || "Toronto";
+      const searchTitles = (titles || []).slice(0, 5);
+      if (!searchTitles.length) {
+        linkedInFallbackEl.hidden = true;
+        return;
+      }
+      const label = document.createElement("span");
+      label.className = "hint";
+      label.textContent = "Official LinkedIn search:";
+      linkedInFallbackEl.appendChild(label);
+      searchTitles.forEach((title) => {
+        const link = document.createElement("a");
+        link.href = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(title)}&location=${encodeURIComponent(location)}`;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = title;
+        linkedInFallbackEl.appendChild(link);
+      });
+      linkedInFallbackEl.hidden = false;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      runButton.disabled = true;
+      setStatus("Running search. This can take a bit if Indeed or LinkedIn is enabled.");
+
+      try {
+        const response = await fetch("/api/run", {
+          method: "POST",
+          body: new FormData(form),
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Search failed.");
+        }
+
+        emptyState.hidden = true;
+        resultsPanelEl.hidden = false;
+        resultsEl.hidden = false;
+        outputPathEl.textContent = `CSV saved to: ${payload.output_path}`;
+        const sourceWarnings = payload.source_warnings || [];
+        const diagnostics = payload.ranking_diagnostics || {};
+        sourceSummaryEl.textContent = `By source - fetched: ${formatSourceCounts(payload.source_fetch_counts)}. Ranked: ${formatSourceCounts(payload.source_match_counts)}. Scoring: ${diagnostics.above_threshold || 0} above threshold, ${diagnostics.below_threshold || 0} below, ${diagnostics.displayed || 0} shown.${sourceWarnings.length ? ` Warnings: ${sourceWarnings.join(" | ")}` : ""}`;
+        renderLinkedInFallback(payload.inferred_titles);
+        matchCountEl.textContent = payload.matched_jobs;
+        topTitleEl.textContent = payload.inferred_titles[0] || "-";
+        topKeywordEl.textContent = payload.matching_keywords[0] || "-";
+        renderPills(titlePillsEl, payload.inferred_titles, "No title hints");
+        renderPills(keywordPillsEl, payload.matching_keywords || [], "No matching keywords enabled");
+        const fetched = payload.fetched_preview || [];
+        fetchedResultsEl.hidden = !fetched.length;
+        fetchedSummaryEl.textContent = `Showing ${fetched.length} job(s) returned by the selected sources before your resume score is applied.`;
+        renderFetchedRows(fetched);
+        renderRows(resultsBodyEl, payload.preview);
+        renderRows(indeedResultsBodyEl, payload.indeed_preview || [], true);
+        renderRows(linkedInResultsBodyEl, payload.linkedin_preview || [], true);
+        indeedRankingEl.hidden = !(payload.indeed_preview || []).length;
+        linkedInRankingEl.hidden = !(payload.linkedin_preview || []).length;
+        const usage = payload.ai_usage || {};
+        const experience = payload.resume_experience_years || {};
+        const verification = payload.application_page_verification || {};
+        const experienceNote = ` Resume estimate: ${experience.professional ?? 0}y${Number.isFinite(experience.professional_months) ? ` / ${experience.professional_months} months` : ""} professional experience.`;
+        const verificationNote = verification.checked
+          ? ` Verified ${verification.enriched}/${verification.checked} top application pages.`
+          : "";
+        const aiNote = usage.provider
+          ? ` ${usage.provider} reranked ${usage.reranked_jobs} jobs${usage.total_tokens ? ` using ${usage.total_tokens} tokens` : ""}.`
+          : "";
+        const aiWarning = usage.warning ? ` AI warning: ${usage.warning}` : "";
+        setStatus(`Finished. Found ${payload.matched_jobs} matched jobs.${experienceNote}${verificationNote}${aiNote}${aiWarning}`);
+      } catch (error) {
+        setStatus(error.message || "Search failed.", true);
+      } finally {
+        runButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

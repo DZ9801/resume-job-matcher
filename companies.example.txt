@@ -1,0 +1,10 @@
+# One company per line
+# Supported formats:
+# greenhouse:token
+# lever:site
+
+greenhouse:stripe
+greenhouse:figma
+greenhouse:airbnb
+greenhouse:reddit
+lever:spotify

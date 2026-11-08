@@ -1,0 +1,23 @@
+# Starter Greenhouse + Lever companies with Canada / Toronto relevance
+# Curated on 2026-08-09 from publicly accessible job boards or recent search results.
+# Formats:
+# greenhouse:board_token
+# lever:site
+
+greenhouse:gusto
+greenhouse:reddit
+greenhouse:stripe
+greenhouse:okta
+greenhouse:snowflake
+greenhouse:figma
+greenhouse:airbnb
+greenhouse:coreweave
+greenhouse:dropbox
+greenhouse:hubspotjobs
+
+lever:achievers
+lever:getmaple
+lever:kepler
+lever:quantcast
+lever:lvs1
+lever:applydigital

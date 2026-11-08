@@ -1,0 +1,19 @@
+# Starter Greenhouse + Lever companies for larger global tech companies
+# Curated on 2026-08-09 from publicly accessible job boards or recent search results.
+# Formats:
+# greenhouse:board_token
+# lever:site
+
+greenhouse:airbnb
+greenhouse:figma
+greenhouse:gusto
+greenhouse:okta
+greenhouse:reddit
+greenhouse:snowflake
+greenhouse:stripe
+greenhouse:coreweave
+greenhouse:dropbox
+greenhouse:hubspotjobs
+
+lever:applydigital
+lever:quantcast

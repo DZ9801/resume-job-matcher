@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Generated job-search results and local output folders.
+*_matches.csv
+captured_linkedin_jds.json
+output/
+outputs/
